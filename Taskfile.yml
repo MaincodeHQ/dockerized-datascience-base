@@ -1,0 +1,26 @@
+version: "3"
+
+tasks:
+  up:
+    desc: "Stop running containers using docker-compose.yml and start fresh"
+    cmds:
+      - docker-compose -f docker-compose.yml down
+      - docker-compose -f docker-compose.yml up -d
+
+  zip:
+    desc: "Create a zip archive of the project, respecting .gitignore patterns"
+    cmds:
+      - |
+        ZIPFILE="project_$(date +%Y%m%d_%H%M%S).zip"
+        echo "Creating $ZIPFILE..."
+        # Create a temporary file listing
+        FILES_LIST=$(mktemp)
+        # Get all tracked files
+        git ls-files > "$FILES_LIST"
+        # Add untracked files that aren't ignored
+        git ls-files --others --exclude-standard >> "$FILES_LIST"
+        # Create zip with the file list
+        zip "$ZIPFILE" -@ < "$FILES_LIST"
+        # Clean up
+        rm "$FILES_LIST"
+        echo "Archive created: $ZIPFILE"
